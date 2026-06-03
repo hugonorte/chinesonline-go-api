@@ -1,0 +1,59 @@
+package middlewares
+
+import (
+	"context"
+	"net/http"
+	"strings"
+
+	firebase "firebase.google.com/go/v4"
+	"github.com/gin-gonic/gin"
+	"google.golang.org/api/option"
+)
+
+var FirebaseApp *firebase.App
+
+// InitFirebase inicializa a conexão com o Firebase usando o arquivo JSON da conta de serviço
+func InitFirebase(credentialPath string) error {
+	opt := option.WithCredentialsFile(credentialPath)
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		return err
+	}
+	FirebaseApp = app
+	return nil
+}
+
+// FirebaseAuthMiddleware verifica o token JWT nas requisições protegidas
+func FirebaseAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token de autenticação não fornecido ou inválido"})
+			c.Abort()
+			return
+		}
+
+		idToken := strings.TrimPrefix(authHeader, "Bearer ")
+
+		// Verifica o token usando o Firebase Admin SDK
+		authClient, err := FirebaseApp.Auth(context.Background())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro de integração com autenticação"})
+			c.Abort()
+			return
+		}
+
+		token, err := authClient.VerifyIDToken(context.Background(), idToken)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token inválido ou expirado"})
+			c.Abort()
+			return
+		}
+
+		// Injeta o UID e Claims no contexto
+		c.Set("UID", token.UID)
+		c.Set("Claims", token.Claims)
+
+		c.Next()
+	}
+}

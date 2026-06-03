@@ -1,0 +1,37 @@
+# Binários
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+api_bin
+
+# Arquivos de teste e coverage
+*.test
+*.out
+
+# Go workspace
+go.work
+go.work.sum
+
+# Variáveis de Ambiente
+.env
+.env.*
+!.env.example
+
+# Credenciais e Segredos (Específicos do projeto)
+*-firebase-adminsdk-*.json
+
+# Diretórios de dependências (se usar vendoring)
+vendor/
+
+# Arquivos temporários e de Sistema Operacional
+.DS_Store
+Thumbs.db
+*~
+*.swp
+
+# Pastas de IDEs (VS Code, GoLand, etc)
+.vscode/
+.idea/
+*.iml
