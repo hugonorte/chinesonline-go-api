@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"net/http"
+	"os"
 	"strings"
 
 	firebase "firebase.google.com/go/v4"
@@ -30,6 +31,14 @@ func FirebaseAuthMiddleware() gin.HandlerFunc {
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token de autenticação não fornecido ou inválido"})
 			c.Abort()
+			return
+		}
+
+		// 🔴 MOCK APENAS PARA DESENVOLVIMENTO
+		if os.Getenv("APP_ENV") == "development" && authHeader == "Bearer dev-admin-token" {
+			c.Set("UID", "admin-local-123")
+			c.Set("Claims", map[string]interface{}{"admin": true})
+			c.Next()
 			return
 		}
 
