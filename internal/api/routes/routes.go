@@ -16,4 +16,17 @@ func RegisterRoutes(r *gin.Engine) {
 		sessions.GET("/new", handlers.GenerateSession)
 		sessions.POST("/:id/submit", handlers.SubmitSession)
 	}
+
+	// Rotas administrativas protegidas por Firebase Auth e verificação de Admin
+	admin := v1.Group("/admin")
+	admin.Use(middlewares.FirebaseAuthMiddleware())
+	admin.Use(middlewares.VerifyAdmin())
+	{
+		admin.POST("/ideograms", handlers.CreateIdeogram)
+		admin.PUT("/ideograms/:id", handlers.UpdateIdeogram)
+		admin.DELETE("/ideograms/:id", handlers.DeleteIdeogram)
+		admin.GET("/ideograms/:id", handlers.GetIdeogram)
+		admin.GET("/ideograms", handlers.GetIdeograms)
+		admin.POST("/ideograms/batch", handlers.CreateBatchIdeograms)
+	}
 }

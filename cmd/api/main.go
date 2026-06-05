@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/hugonorte/chinesonline-go-api/internal/api/middlewares"
 	"github.com/hugonorte/chinesonline-go-api/internal/api/routes"
@@ -23,6 +24,15 @@ func main() {
 
 	// Inicializa router Gin
 	r := gin.Default()
+
+	// Configuração de CORS para permitir o frontend Nuxt
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// Rota de Health Check
 	r.GET("/health", func(c *gin.Context) {
