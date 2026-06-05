@@ -27,6 +27,10 @@ func InitDB(dsn string) {
 
 	// Auto-Migrate
 	log.Println("Rodando AutoMigrate...")
+	if os.Getenv("FORCE_RECREATE_IDEOGRAMS") == "true" {
+		log.Println("⚠️ DropTable para Ideogram ativo. Recriando tabela...")
+		DB.Migrator().DropTable(&models.Ideogram{})
+	}
 	DB.AutoMigrate(&models.User{}, &models.Ideogram{}, &models.QuizSession{})
 
 	// Seed para Testes de Desenvolvimento
@@ -38,9 +42,9 @@ func InitDB(dsn string) {
 		DB.Model(&models.Ideogram{}).Count(&count)
 		if count == 0 {
 			DB.Create([]models.Ideogram{
-				{Character: "我", Pinyin: "wo3", PinyinWithTones: "wǒ", Translation: "Eu", DifficultyLevel: 1},
-				{Character: "你", Pinyin: "ni3", PinyinWithTones: "nǐ", Translation: "Você", DifficultyLevel: 1},
-				{Character: "好", Pinyin: "hao3", PinyinWithTones: "hǎo", Translation: "Bom / Bem", DifficultyLevel: 1},
+				{Character: "我", PinyinWithoutTones: "wo3", PinyinWithTones: "wǒ", Translation: "Eu", DifficultyLevel: 1},
+				{Character: "你", PinyinWithoutTones: "ni3", PinyinWithTones: "nǐ", Translation: "Você", DifficultyLevel: 1},
+				{Character: "好", PinyinWithoutTones: "hao3", PinyinWithTones: "hǎo", Translation: "Bom / Bem", DifficultyLevel: 1},
 			})
 			log.Println("Ideogramas de teste (seed) inseridos com sucesso!")
 		}

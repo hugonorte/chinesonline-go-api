@@ -66,3 +66,31 @@ func FirebaseAuthMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// VerifyAdmin middleware verifica se o usuário autenticado possui privilégios de administrador
+func VerifyAdmin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claimsData, exists := c.Get("Claims")
+		if !exists {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado: claims não encontrados"})
+			c.Abort()
+			return
+		}
+
+		claims, ok := claimsData.(map[string]interface{})
+		if !ok {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado: claims em formato inválido"})
+			c.Abort()
+			return
+		}
+
+		isAdmin, ok := claims["admin"].(bool)
+		if !ok || !isAdmin {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Acesso negado: privilégios de administrador requeridos"})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
