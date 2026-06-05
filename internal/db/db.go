@@ -31,7 +31,7 @@ func InitDB(dsn string) {
 		log.Println("⚠️ DropTable para Ideogram ativo. Recriando tabela...")
 		DB.Migrator().DropTable(&models.Ideogram{})
 	}
-	DB.AutoMigrate(&models.User{}, &models.Ideogram{}, &models.QuizSession{})
+	DB.AutoMigrate(&models.User{}, &models.Ideogram{}, &models.QuizSession{}, &models.LoginHistory{})
 
 	// Seed para Testes de Desenvolvimento
 	if os.Getenv("APP_ENV") == "development" {
