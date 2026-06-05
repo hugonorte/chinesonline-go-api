@@ -21,6 +21,8 @@ go.work.sum
 
 # Credenciais e Segredos (Específicos do projeto)
 *-firebase-adminsdk-*.json
+chinesonline-prod*.json
+chinesonline-dev*.json
 
 # Diretórios de dependências (se usar vendoring)
 vendor/
