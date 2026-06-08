@@ -79,10 +79,12 @@ func GenerateSession(c *gin.Context) {
 		hash := hashAnswer(correctAnswer, salt)
 
 		questions = append(questions, map[string]interface{}{
-			"id":        idg.ID,
-			"character": idg.Character,
-			"salt":      salt,
-			"hash":      hash,
+			"id":          idg.ID,
+			"character":   idg.Character,
+			"salt":        salt,
+			"hash":        hash,
+			"pinyin":      idg.PinyinWithTones,
+			"translation": idg.Translation,
 		})
 	}
 
