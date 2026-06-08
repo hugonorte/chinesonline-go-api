@@ -102,6 +102,8 @@ func GenerateSession(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"session_id": session.ID,
+		"max_score":  user.MaxScore,
+		"level":      user.Level,
 		"questions":  questions,
 	})
 }
