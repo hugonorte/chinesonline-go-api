@@ -192,7 +192,8 @@ func SubmitSession(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"score":           score,
+		"max_score":       user.MaxScore,
 		"is_new_record":   isNewRecord,
-		"session_valid":   session.IsValid,
+		"is_valid":        session.IsValid,
 	})
 }
