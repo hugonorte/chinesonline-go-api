@@ -17,6 +17,20 @@ func RegisterRoutes(r *gin.Engine) {
 		sessions.POST("/:id/submit", handlers.SubmitSession)
 	}
 
+	// Rotas de Usuário (Sync de cadastro)
+	users := v1.Group("/users")
+	users.Use(middlewares.FirebaseAuthMiddleware())
+	{
+		users.POST("/sync", handlers.SyncUser)
+	}
+
+	// Rotas de Autenticação (Login History)
+	auth := v1.Group("/auth")
+	auth.Use(middlewares.FirebaseAuthMiddleware())
+	{
+		auth.POST("/login", handlers.RecordLogin)
+	}
+
 	// Rotas administrativas protegidas por Firebase Auth e verificação de Admin
 	admin := v1.Group("/admin")
 	admin.Use(middlewares.FirebaseAuthMiddleware())

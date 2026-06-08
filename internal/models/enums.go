@@ -209,3 +209,17 @@ const (
 	AccountTypeFreemium
 	AccountTypePremium
 )
+
+// GameType represents the type of quiz game
+type GameType string
+
+const (
+	GameTypeTranslation                GameType = "translation"
+	GameTypePinyinWithoutTone          GameType = "pinyin_without_tone"
+	GameTypePinyinWithNumericTone      GameType = "pinyin_with_numeric_tone"
+	GameTypePinyinWithSimbolTone       GameType = "pinyin_with_simbol_tone"
+	GameTypeTranslationTimed           GameType = "translation_timed"
+	GameTypePinyinWithoutToneTimed     GameType = "pinyin_without_tone_timed"
+	GameTypePinyinWithNumericToneTimed GameType = "pinyin_with_numeric_tone_timed"
+	GameTypePinyinWithSimbolToneTimed  GameType = "pinyin_with_simbol_tone_timed"
+)

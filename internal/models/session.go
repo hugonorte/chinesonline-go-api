@@ -10,4 +10,5 @@ type QuizSession struct {
 	TimestampStart time.Time `gorm:"not null"`
 	TimestampEnd   *time.Time
 	IsValid        bool      `gorm:"default:true"`
+	GameType       GameType  `gorm:"type:varchar(50);default:'pinyin_without_tone'"`
 }

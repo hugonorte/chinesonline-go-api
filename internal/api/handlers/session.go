@@ -34,6 +34,12 @@ func GenerateSession(c *gin.Context) {
 		level = "1"
 	}
 
+	gameTypeStr := c.Query("game_type")
+	if gameTypeStr == "" {
+		gameTypeStr = string(models.GameTypePinyinWithoutTone)
+	}
+	gameType := models.GameType(gameTypeStr)
+
 	uid, exists := c.Get("UID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
@@ -55,7 +61,21 @@ func GenerateSession(c *gin.Context) {
 	var questions []map[string]interface{}
 	for _, idg := range ideograms {
 		salt := generateSalt(8)
-		correctAnswer := idg.Translation
+		
+		var correctAnswer string
+		switch gameType {
+		case models.GameTypeTranslation, models.GameTypeTranslationTimed:
+			correctAnswer = idg.Translation
+		case models.GameTypePinyinWithoutTone, models.GameTypePinyinWithoutToneTimed:
+			correctAnswer = idg.PinyinWithoutTones
+		case models.GameTypePinyinWithNumericTone, models.GameTypePinyinWithNumericToneTimed:
+			correctAnswer = idg.PinyinWithNumericTones
+		case models.GameTypePinyinWithSimbolTone, models.GameTypePinyinWithSimbolToneTimed:
+			correctAnswer = idg.PinyinWithTones
+		default:
+			correctAnswer = idg.PinyinWithoutTones
+		}
+
 		hash := hashAnswer(correctAnswer, salt)
 
 		questions = append(questions, map[string]interface{}{
@@ -71,6 +91,7 @@ func GenerateSession(c *gin.Context) {
 		UserID:         user.ID,
 		TimestampStart: time.Now(),
 		IsValid:        true,
+		GameType:       gameType,
 	}
 	if err := db.DB.Create(&session).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao criar sessão"})
@@ -101,9 +122,18 @@ func SubmitSession(c *gin.Context) {
 		return
 	}
 
-	// Validação de Time-Spoofing (ex: no min. 1 segundo por questão respondida)
+	// Validação de Time-Spoofing e Limite Máximo
 	timeElapsed := time.Since(session.TimestampStart)
 	minTimeRequired := time.Duration(len(payload.Answers)) * time.Second
+	
+	// Sugestão de limite máximo de segurança: 60 segundos por questão para não ser tão restritivo
+	maxTimeAllowed := time.Duration(len(payload.Answers)) * 60 * time.Second
+	
+	isTimed := session.GameType == models.GameTypeTranslationTimed || 
+	           session.GameType == models.GameTypePinyinWithoutToneTimed || 
+	           session.GameType == models.GameTypePinyinWithNumericToneTimed || 
+	           session.GameType == models.GameTypePinyinWithSimbolToneTimed
+
 	if timeElapsed < minTimeRequired {
 		session.IsValid = false
 		db.DB.Save(&session)
@@ -111,11 +141,32 @@ func SubmitSession(c *gin.Context) {
 		return
 	}
 
+	if isTimed && timeElapsed > maxTimeAllowed {
+		session.IsValid = false
+		db.DB.Save(&session)
+		c.JSON(http.StatusForbidden, gin.H{"error": "Tempo máximo excedido, sessão invalidada."})
+		return
+	}
+
 	score := 0
 	for idStr, givenAnswer := range payload.Answers {
 		var idg models.Ideogram
 		if err := db.DB.First(&idg, idStr).Error; err == nil {
-			if idg.Translation == givenAnswer {
+			var expectedAnswer string
+			switch session.GameType {
+			case models.GameTypeTranslation, models.GameTypeTranslationTimed:
+				expectedAnswer = idg.Translation
+			case models.GameTypePinyinWithoutTone, models.GameTypePinyinWithoutToneTimed:
+				expectedAnswer = idg.PinyinWithoutTones
+			case models.GameTypePinyinWithNumericTone, models.GameTypePinyinWithNumericToneTimed:
+				expectedAnswer = idg.PinyinWithNumericTones
+			case models.GameTypePinyinWithSimbolTone, models.GameTypePinyinWithSimbolToneTimed:
+				expectedAnswer = idg.PinyinWithTones
+			default:
+				expectedAnswer = idg.PinyinWithoutTones
+			}
+
+			if expectedAnswer == givenAnswer {
 				score += 10
 			}
 		}
