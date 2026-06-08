@@ -17,11 +17,12 @@ func RegisterRoutes(r *gin.Engine) {
 		sessions.POST("/:id/submit", handlers.SubmitSession)
 	}
 
-	// Rotas de Usuário (Sync de cadastro)
+	// Rotas de Usuário (Sync de cadastro e Perfil)
 	users := v1.Group("/users")
 	users.Use(middlewares.FirebaseAuthMiddleware())
 	{
 		users.POST("/sync", handlers.SyncUser)
+		users.GET("/me", handlers.GetMe)
 	}
 
 	// Rotas de Autenticação (Login History)

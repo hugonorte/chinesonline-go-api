@@ -63,3 +63,21 @@ func SyncUser(c *gin.Context) {
 		"user":    user,
 	})
 }
+
+// GetMe retorna o perfil do usuário logado
+func GetMe(c *gin.Context) {
+	uidData, exists := c.Get("UID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "UID não encontrado no token"})
+		return
+	}
+	uid := uidData.(string)
+
+	var user models.User
+	if err := db.DB.Where(&models.User{UID: uid}).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Usuário não encontrado. Faça o sync primeiro."})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}

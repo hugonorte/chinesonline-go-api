@@ -12,6 +12,7 @@ type User struct {
 	Status      string      `gorm:"type:varchar(50);default:'active'"`
 	Role        string      `gorm:"type:varchar(50);default:'user'"`
 	MaxScore    int         `gorm:"default:0"`
+	Level       int         `gorm:"default:1"`
 	Country     Country     `gorm:"type:smallint;default:0"`
 	AccountType AccountType `gorm:"type:smallint;default:0"`
 	BirthDate   *time.Time  `gorm:"type:date"`

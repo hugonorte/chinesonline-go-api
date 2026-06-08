@@ -53,9 +53,9 @@ func GenerateSession(c *gin.Context) {
 		return
 	}
 
-	// Busca 10 ideogramas aleatórios
+	// Busca 10 ideogramas aleatórios até o nível do usuário
 	var ideograms []models.Ideogram
-	db.DB.Where("difficulty_level = ?", level).Order("RANDOM()").Limit(10).Find(&ideograms)
+	db.DB.Where("difficulty_level <= ?", user.Level).Order("RANDOM()").Limit(10).Find(&ideograms)
 
 	// Prepara a resposta com salt e hash
 	var questions []map[string]interface{}
