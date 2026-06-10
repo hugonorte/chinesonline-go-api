@@ -25,6 +25,16 @@ func InitDB(dsn string) {
 		log.Fatalf("Falha ao conectar no banco de dados Neon: %v", err)
 	}
 
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Fatalf("Falha ao obter objeto sql.DB para connection pooling: %v", err)
+	}
+
+	// Limites conservadores e adequados para um Serverless Postgres (Neon)
+	// Isso evita o esgotamento do pool de conexões limitando conexões ociosas.
+	sqlDB.SetMaxIdleConns(2)
+	sqlDB.SetMaxOpenConns(15)
+
 	// Auto-Migrate
 	log.Println("Rodando AutoMigrate...")
 	if os.Getenv("FORCE_RECREATE_IDEOGRAMS") == "true" {

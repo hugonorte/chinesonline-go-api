@@ -94,3 +94,37 @@ func VerifyAdmin() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// AppCheckMiddleware verifica o token do Firebase App Check para barrar requisições não autênticas
+func AppCheckMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Bypass para ambiente de desenvolvimento
+		if os.Getenv("APP_ENV") == "development" {
+			c.Next()
+			return
+		}
+
+		appCheckToken := c.GetHeader("X-Firebase-AppCheck")
+		if appCheckToken == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "App Check token não fornecido."})
+			c.Abort()
+			return
+		}
+
+		appCheckClient, err := FirebaseApp.AppCheck(context.Background())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao inicializar verificação do App Check"})
+			c.Abort()
+			return
+		}
+
+		_, err = appCheckClient.VerifyToken(appCheckToken)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "App Check token inválido."})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}

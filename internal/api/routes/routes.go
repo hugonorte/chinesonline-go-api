@@ -12,6 +12,7 @@ func RegisterRoutes(r *gin.Engine) {
 	// Rotas protegidas pelo Firebase Auth
 	sessions := v1.Group("/sessions")
 	sessions.Use(middlewares.FirebaseAuthMiddleware())
+	sessions.Use(middlewares.AppCheckMiddleware())
 	{
 		sessions.GET("/new", handlers.GenerateSession)
 		sessions.POST("/:id/submit", handlers.SubmitSession)
