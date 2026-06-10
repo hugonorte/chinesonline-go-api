@@ -41,8 +41,16 @@ func main() {
 		})
 	})
 
-	// Inicializa o Firebase com o arquivo JSON na raiz
-	err := middlewares.InitFirebase("chinesonline-prod-firebase-adminsdk-fbsvc-72020d017a.json")
+	// Inicializa o Firebase:
+	// Prioriza a Variável de Ambiente FIREBASE_CREDENTIALS (para Cloud Run em Produção)
+	// Se não existir, faz fallback pro arquivo JSON local (para Desenvolvimento)
+	var err error
+	if credsJSON := os.Getenv("FIREBASE_CREDENTIALS"); credsJSON != "" {
+		err = middlewares.InitFirebaseFromJSON([]byte(credsJSON))
+	} else {
+		err = middlewares.InitFirebase("chinesonline-prod-firebase-adminsdk-fbsvc-72020d017a.json")
+	}
+
 	if err != nil {
 		log.Fatalf("Erro ao inicializar o Firebase: %v", err)
 	}

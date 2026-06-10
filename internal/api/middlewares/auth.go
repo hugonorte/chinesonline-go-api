@@ -13,9 +13,20 @@ import (
 
 var FirebaseApp *firebase.App
 
-// InitFirebase inicializa a conexão com o Firebase usando o arquivo JSON da conta de serviço
+// InitFirebase inicializa a conexão com o Firebase usando o arquivo JSON físico (desenvolvimento)
 func InitFirebase(credentialPath string) error {
 	opt := option.WithCredentialsFile(credentialPath)
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		return err
+	}
+	FirebaseApp = app
+	return nil
+}
+
+// InitFirebaseFromJSON inicializa o Firebase a partir de uma string JSON (Ideal para Cloud Run via Env Var)
+func InitFirebaseFromJSON(jsonContent []byte) error {
+	opt := option.WithCredentialsJSON(jsonContent)
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		return err
